@@ -36,7 +36,7 @@ class VerifyCsrfToken
 
     /**
      * The URIs that should be excluded.
-     *
+     * Каюсь, пришлось согрешить, но всё ради авторизации))
      * @var array<int, string>
      */
     protected $except = ['/*'];

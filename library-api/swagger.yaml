@@ -1,17 +1,17 @@
 openapi: 3.0.0
 info:
   title: Book API
-  version: 1.0
-  description: API для работы с книгами
+  version: '1.0'
+  description: API для работы с книгами и резервами
 servers:
-  - url: http://localhost/api
-    description: Локальный сервер
+  - url: http://127.0.0.1:8000/
+    description: Локальный сервер Laravel
 
 paths:
   /book:
     get:
       summary: Поиск книг
-      description: Ищите книги по названию, автору или ID.
+      description: Ищите книги по названию, автору или ID, либо весь список с пагинацией.
       parameters:
         - name: title
           in: query
@@ -38,6 +38,13 @@ paths:
           schema:
             type: integer
             default: 10
+        - name: page
+          in: query
+          description: Номер страницы
+          required: false
+          schema:
+            type: integer
+            default: 1
       responses:
         '200':
           description: Книги найдены
@@ -46,10 +53,31 @@ paths:
               schema:
                 type: object
                 properties:
+                  current_page:
+                    type: integer
+                    example: 1
                   data:
                     type: array
                     items:
                       $ref: '#/components/schemas/Book'
+                  first_page_url:
+                    type: string
+                    example: "http://127.0.0.1:8000/book?page=1"
+                  last_page_url:
+                    type: string
+                    example: "http://127.0.0.1:8000/book?page=1"
+                  prev_page_url:
+                    type: string
+                    example: null
+                  next_page_url:
+                    type: string
+                    example: null
+                  total:
+                    type: integer
+                    example: 1
+                  per_page:
+                    type: integer
+                    example: 10
         '404':
           description: Книги не найдены
           content:
@@ -99,6 +127,10 @@ paths:
                   message:
                     type: string
                     example: "Book created successfully"
+                  book:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Book'
         '401':
           description: Неавторизован
           content:
@@ -196,6 +228,10 @@ paths:
                   message:
                     type: string
                     example: "Book updated successfully"
+                  book:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Book'
         '401':
           description: Неавторизован
           content:
@@ -217,8 +253,130 @@ paths:
                     type: string
                     example: "Book not found"
 
+  /reservations:
+    post:
+      summary: Создать бронирование книги
+      description: Создает новое бронирование для книги. Требует авторизации пользователя.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - book_id
+              properties:
+                book_id:
+                  type: integer
+                  example: 1
+      responses:
+        '201':
+          description: Книга успешно забронирована
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Book successfully reserved"
+                  reservation:
+                    $ref: '#/components/schemas/Reservation'
+        '400':
+          description: Книга недоступна для бронирования
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Book is not available"
+        '404':
+          description: Книга не найдена
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Book not found"
+        '401':
+          description: Неавторизован
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized"
+
+    put:
+      summary: Вернуть книгу
+      description: Отмечает книгу как возвращенную. Требует авторизации пользователя.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - book_id
+              properties:
+                book_id:
+                  type: integer
+                  example: 1
+      responses:
+        '200':
+          description: Книга успешно возвращена
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Book successfully returned"
+                  reservation:
+                    $ref: '#/components/schemas/Reservation'
+        '404':
+          description: Бронирование не найдено или уже возвращено
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Reservation not found or already returned"
+        '401':
+          description: Неавторизован
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized"
+
 components:
   schemas:
+    Author:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        created_at:
+          type: string
+        updated_at:
+          type: string
     Book:
       type: object
       properties:
@@ -232,12 +390,24 @@ components:
           type: integer
         is_available:
           type: boolean
-    Author:
+        author:
+          $ref: '#/components/schemas/Author'
+        created_at:
+          type: string
+        updated_at:
+          type: string
+    Reservation:
       type: object
       properties:
         id:
           type: integer
-        name:
+        book_id:
+          type: integer
+        user_id:
+          type: integer
+        reserved_at:
+          type: string
+        returned_at:
           type: string
 
   securitySchemes:
