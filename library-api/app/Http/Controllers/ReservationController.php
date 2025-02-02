@@ -2,15 +2,16 @@
 
 namespace App\Http\Controllers;
 
-
 use App\Models\Book;
 use Illuminate\Http\Request;
 use App\Models\Author;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
+use Symfony\Component\HttpFoundation\Response;
+
 class ReservationController extends Controller
 {
-    public function set(Request $request)
+    public function set(Request $request): JsonResponse
     {
         // Валидация параметра 'id' (должен быть числом и обязательным)
         $validator = Validator::make($request->all(), [
@@ -22,7 +23,7 @@ class ReservationController extends Controller
             return response()->json([
                 'error' => 'Invalid data',
                 'messages' => $validator->errors(),
-            ], 422); // HTTP статус 422 — Unprocessable Entity
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $BookId = $request->input('id');
@@ -31,9 +32,5 @@ class ReservationController extends Controller
         $query->where('id', "=", $BookId);
 
         return response()->json($query->get());
-    }
-    public function set2(Request $request)
-    {
-        return "asda";
     }
 }
