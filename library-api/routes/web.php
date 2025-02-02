@@ -12,7 +12,8 @@ Route::patch('/book/{id}', [BookController::class, 'edit'])->middleware('auth');
 Route::post('/book', [BookController::class, 'create'])->middleware('auth');
 
 
-Route::post('/reservations', [ReservationController::class, 'set']);
+Route::post('/reservations', [ReservationController::class, 'create'])->middleware('auth');
+Route::put('/reservations', [ReservationController::class, 'returnBook'])->middleware('auth');
 
 
 

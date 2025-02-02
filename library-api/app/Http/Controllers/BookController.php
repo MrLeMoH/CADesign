@@ -44,7 +44,7 @@ class BookController extends Controller
     {
         $user = $request->user();
 
-        if (!$user || !$user->is_admin) {
+        if (!$user && $user->is_admin == 1 ) {
             return response()->json(['error' => 'Unauthorized'], Response::HTTP_UNAUTHORIZED);
         }
 
@@ -63,7 +63,7 @@ class BookController extends Controller
     {
         $user = $request->user();
 
-        if (!$user || !$user->is_admin) {
+        if (!$user && $user->is_admin == 1 ) {
             return response()->json(['error' => 'Unauthorized'], Response::HTTP_UNAUTHORIZED);
         }
 
@@ -89,7 +89,7 @@ class BookController extends Controller
     {
         $user = $request->user();
 
-        if (!$user || !$user->is_admin) {
+        if (!$user && $user->is_admin == 1 ) {
             return response()->json(['error' => 'Unauthorized'], Response::HTTP_UNAUTHORIZED);
         }
 

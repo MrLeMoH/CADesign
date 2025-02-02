@@ -1,0 +1,247 @@
+openapi: 3.0.0
+info:
+  title: Book API
+  version: 1.0
+  description: API для работы с книгами
+servers:
+  - url: http://localhost/api
+    description: Локальный сервер
+
+paths:
+  /book:
+    get:
+      summary: Поиск книг
+      description: Ищите книги по названию, автору или ID.
+      parameters:
+        - name: title
+          in: query
+          description: Название книги
+          required: false
+          schema:
+            type: string
+        - name: author
+          in: query
+          description: Автор книги
+          required: false
+          schema:
+            type: string
+        - name: id
+          in: query
+          description: ID книги
+          required: false
+          schema:
+            type: integer
+        - name: per_page
+          in: query
+          description: Количество записей на странице
+          required: false
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Книги найдены
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Book'
+        '404':
+          description: Книги не найдены
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Book not found"
+
+    post:
+      summary: Создать книгу
+      description: Создает новую книгу. Требует авторизации администратора.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - title
+                - author_id
+                - publication_year
+              properties:
+                title:
+                  type: string
+                  example: "The Great Book"
+                author_id:
+                  type: integer
+                  example: 1
+                publication_year:
+                  type: integer
+                  example: 2022
+                is_available:
+                  type: boolean
+                  example: true
+      responses:
+        '201':
+          description: Книга создана
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Book created successfully"
+        '401':
+          description: Неавторизован
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized"
+
+  /book/{id}:
+    delete:
+      summary: Удалить книгу
+      description: Удаляет книгу по её ID. Требует авторизации администратора.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: ID книги для удаления
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Книга удалена
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Book deleted successfully"
+        '401':
+          description: Неавторизован
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized"
+        '404':
+          description: Книга не найдена
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Book not found"
+
+    patch:
+      summary: Редактировать книгу
+      description: Редактирует книгу по её ID. Требует авторизации администратора.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: ID книги для редактирования
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                title:
+                  type: string
+                  example: "Updated Book Title"
+                author_id:
+                  type: integer
+                  example: 1
+                publication_year:
+                  type: integer
+                  example: 2023
+                is_available:
+                  type: boolean
+                  example: true
+      responses:
+        '200':
+          description: Книга обновлена
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Book updated successfully"
+        '401':
+          description: Неавторизован
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized"
+        '404':
+          description: Книга не найдена
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Book not found"
+
+components:
+  schemas:
+    Book:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        author_id:
+          type: integer
+        publication_year:
+          type: integer
+        is_available:
+          type: boolean
+    Author:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
